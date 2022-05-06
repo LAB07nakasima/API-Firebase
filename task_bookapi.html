@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="main.css">
+  <title>お気に入りの本を見つける</title>
+</head>
+<body>
+
+<div class="sub">
+  <h1>お気に入りの本を見つける</h1>
+  <p id="typing"></p>
+
+  <input type="text" id="keyword">
+  <button id="btn">検索</button>
+
+  <div id="output"></div>
+
+</div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+
+
+ <!-- googleAPI axiosライブラリの読み込み -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <script>
+    const typing = (element, sentence) => {
+      [...sentence].forEach((character, index) => {
+      setTimeout(() => {
+      document.querySelector(element).textContent += character;
+      }, 100 * ++index);
+      });
+    }
+
+    typing('#typing', 'あなたの見たい本を探して、お気に入りボタンを押してね！');
+
+    //querySelectorはなんでも取得できる 
+      // const favbtn = document.getElementById("favbtn");
+      // console.log(favbtn);
+
+      // //一番近くの親タグを引っ張ってくる
+      // $('#favbtn').on('click',() => {
+      // const favbtn = document.getElementById("favbtn");
+      // const getFav = favbtn.closest('div')
+      // console.log(getFav);
+      // });
+
+  </script>    
+
+  
+      <!-- firebase -->
+    <!-- 以下にfirebaseのコードを貼り付けよう -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    import { //輸入　下記は準備されてるもの　を読み込んでる firebaseの機能を使うにはこれがいる〜
+    getFirestore,
+    collection,
+    addDoc,
+    serverTimestamp,
+    query,
+    orderBy,
+    onSnapshot,
+    }from "https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore.js";
+  
+    // Your web app's Firebase configuration
+    //プロジェクト毎に作る
+    
+    // Initialize Firebase
+    // config=鍵 プロジェクトとつなげる 接続方法----ここから------
+    const app = initializeApp(firebaseConfig);
+
+    //DBとつなげる
+    const db = getFirestore(app);
+    //-----------ここまで----------------
+
+    //ボタンをクリックしたら
+    $('#btn').on('click',function(){
+    const keyword = $('#keyword').val();
+  
+
+    //APIへリクエストする
+    //qが変わる。公式はこれ⇨'https://www.googleapis.com/books/v1/volumes?q=search+terms'
+    const url = 'https://www.googleapis.com/books/v1/volumes?q=intitle:'+ keyword;
+
+    axios.get(url)  
+    //リクエスト　関数を実行する
+
+    .then(function (response){
+      //リクエスト成功時の処理(responseに結果が入る)
+
+      //console見ると、dataにオブジェクトありその中にitemsのオブジェクト
+      //itemsの中にtitleや表紙などの情報あるため、ほしい情報を指定
+      console.log(response);
+
+      //画面に表示するための処理
+      //取ってきた情報を入れる箱を準備
+      const array = [];
+
+      //titleの配列、linkの配列、サムネの配列
+      const title = [];
+      const infoLink = [];
+      const thumbnail = [];
+
+        response.data.items.forEach(book => {  //一つ一つのデータがくる
+          //bookのタイトル、リンク、表紙を出したい
+          const length = array.length;
+           array.push( 
+          
+          `<div class=submit><p class=title_midasi>本のタイトル</p>
+            <p>${book.volumeInfo.title}</p>
+            <button class=favbtn id='favbtn${length}' val=${length}>お気に入り</button>
+            <a href="${book.volumeInfo.infoLink}">
+              <img src="${book.volumeInfo.imageLinks?.thumbnail}" alt="">
+            <a>
+          </div>`
+          ); //配列にとったデータあげる
+
+          title.push(book.volumeInfo.title);
+          infoLink.push(book.volumeInfo.infoLink);
+          thumbnail.push(book.volumeInfo.imageLinks?.thumbnail);
+
+        }); 
+        console.log(array);
+
+      $('#output').html(array); //配列arrayのデータをoutputに画面表示！
+
+     
+      $('.favbtn').on('click',function(arg) {
+      // const favbtn = document.getElementsByClassName("favbtn");
+      // const getFav = favbtn.closest('div')
+      console.log(title[Number(arg.target.value)]);
+      console.log(infoLink[Number(arg.target.value)]);
+      console.log(thumbnail[Number(arg.target.value)]);
+      console.log(arg);
+       //入力値を取得する処理
+       const data = {
+        //id指定し.val()で入力値取得
+        title: title[Number(arg.target.value)],
+        link: infoLink[Number(arg.target.value)],
+        thumnail: thumbnail[Number(arg.target.value)],
+        // time: serverTimestamp(),
+        
+      };
+      console.log(data);
+      //データを送信する処理.オブジェクト形式にする必要がある
+      addDoc(collection(db,'data-save'), data);
+      });
+    })
+
+  
+
+    .catch(function (error) {
+      //リクエスト失敗時の処理(errorにエラー内容が入っている)
+      console.log(error);
+    })
+
+    .finally(function (){
+      //成功失敗に関わらず必ず実行
+      console.log('done!');
+    });
+  });
+
+  </script>
+</body>
+</html>
