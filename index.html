@@ -27,15 +27,15 @@
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
   <script>
-    const typing = (element, sentence) => {
-      [...sentence].forEach((character, index) => {
-      setTimeout(() => {
-      document.querySelector(element).textContent += character;
-      }, 100 * ++index);
-      });
-    }
+    // const typing = (element, sentence) => {
+    //   [...sentence].forEach((character, index) => {
+    //   setTimeout(() => {
+    //   document.querySelector(element).textContent += character;
+    //   }, 100 * ++index);
+    //   });
+    // }
 
-    typing('#typing', 'あなたの見たい本を探して、お気に入りボタンを押してね！');
+    // typing('#typing', 'あなたの見たい本を探して、お気に入りボタンを押してね！');
 
     //querySelectorはなんでも取得できる 
       // const favbtn = document.getElementById("favbtn");
@@ -43,11 +43,8 @@
 
       // //一番近くの親タグを引っ張ってくる
       // $('#favbtn').on('click',() => {
-      // const favbtn = document.getElementById("favbtn");
       // const getFav = favbtn.closest('div')
-      // console.log(getFav);
-      // });
-
+     
   </script>    
 
   
@@ -71,7 +68,10 @@
   
     // Your web app's Firebase configuration
     //プロジェクト毎に作る
-    
+    const firebaseConfig = {
+      
+    };
+  
     // Initialize Firebase
     // config=鍵 プロジェクトとつなげる 接続方法----ここから------
     const app = initializeApp(firebaseConfig);
@@ -113,9 +113,10 @@
           const length = array.length;
            array.push( 
           
-          `<div class=submit><p class=title_midasi>本のタイトル</p>
+          `<div>
+            <p class=title_midasi>本のタイトル</p>
             <p>${book.volumeInfo.title}</p>
-            <button class=favbtn id='favbtn${length}' val=${length}>お気に入り</button>
+            <button id='favbtn${length}' val=${length}>お気に入り</button>
             <a href="${book.volumeInfo.infoLink}">
               <img src="${book.volumeInfo.imageLinks?.thumbnail}" alt="">
             <a>
@@ -145,7 +146,7 @@
         title: title[Number(arg.target.value)],
         link: infoLink[Number(arg.target.value)],
         thumnail: thumbnail[Number(arg.target.value)],
-        // time: serverTimestamp(),
+        time: serverTimestamp(),
         
       };
       console.log(data);
